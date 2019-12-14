@@ -9,6 +9,8 @@ import java.net.*;
 import java.io.*;
 import java.util.Scanner;
 import org.json.simple.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 /**
  *
@@ -25,21 +27,22 @@ public class Ric_client_ipr1 {
         int port = 9090;
  
         try (Socket socket = new Socket(hostname, port)) {
- 
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
- 
+
+            DataInputStream dis = new DataInputStream(socket.getInputStream());
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            
             Scanner scn = new Scanner(System.in);
-            String command;
+            String command, result, id, title, content, search;
  
             do {
                 System.out.println("If you want add new an element set 1.");
                 System.out.println("If you want to find an element set 2.");
                 System.out.println("If you want to delete an element set 3.");
-                System.out.println("If you want to exit set 4.");
+                System.out.println("If you want to see all items set 4.");
+                System.out.println("If you want to exit set 5.");
                 
                 command = scn.nextLine();
- 
+                 
                 JSONObject row = new JSONObject();
                 row.put("command", command);
                 
@@ -47,48 +50,46 @@ public class Ric_client_ipr1 {
                     case 1:
                         
                         System.out.println("Set id:");
-                        String id = scn.nextLine();
+                        id = scn.nextLine();
                         row.put("id", id);
 
                         System.out.println("Set title:");
-                        String title = scn.nextLine();
+                        title = scn.nextLine();
                         row.put("title", title);
 
                         System.out.println("Set content:");
-                        String content = scn.nextLine();
+                        content = scn.nextLine();
                         row.put("content", content);
-                        
                         
                         break;
                     case 2:
                         
+                        System.out.println("Enter document title:");
+                        
+                        search = scn.nextLine();
+                        row.put("search", search);
+                        
                         break;
                     case 3:
-                        
+                        System.out.println("Enter document id:");
+                        id = scn.nextLine();
+                        row.put("id", id);
                         break;
                     case 4:
                         
                         break;
                 }
-                
-                writer.println(row.toString());
+                                
+                dos.writeUTF(row.toString());
  
-                InputStream input = socket.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                String result = new String();                
-                String line = new String();                
-                while ((line = reader.readLine()) != null) {
-                    if (line.isEmpty()) {
-                        break;
-                    }
-                    result += line + "\n";
-                }
- 
+                result = dis.readUTF();                                
                 System.out.println(result);
- 
-            } while (!command.equals("4"));
- 
+
+            } while (!command.equals("5"));
+             
             socket.close();
+            dis.close();
+            dos.close();
  
         } catch (UnknownHostException ex) {
  
